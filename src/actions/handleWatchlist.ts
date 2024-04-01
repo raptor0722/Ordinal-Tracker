@@ -74,6 +74,8 @@ export const getWatchlists = async (userRef: any): Promise<data> => {
   }
 };
 
+import axios from 'axios';
+
 export const addWatchListBySlug = async (slug: string, userRef: any) => {
   try {
     console.log("userRef in addWatchListBySlug", userRef);
@@ -104,12 +106,7 @@ export const addWatchListBySlug = async (slug: string, userRef: any) => {
     console.log("formattedSlug", formattedSlug);
 
     //get inscription
-    let inscription = await fetch(
-      `https://turbo.ordinalswallet.com/collection/${formattedSlug}`,
-      {
-        method: "GET",
-      }
-    );
+    let inscription = await axios.get(`https://turbo.ordinalswallet.com/collection/${formattedSlug}`);
 
     //verify response
     if (inscription.status !== 200) {
@@ -117,12 +114,7 @@ export const addWatchListBySlug = async (slug: string, userRef: any) => {
       formattedSlug = formatSlugAgain(slug);
       console.log("formattedSlug", formattedSlug);
 
-      inscription = await fetch(
-        `https://turbo.ordinalswallet.com/collection/${formattedSlug}`,
-        {
-          method: "GET",
-        }
-      );
+      inscription = await axios.get(`https://turbo.ordinalswallet.com/collection/${formattedSlug}`);
 
       // If the second attempt also fails, return an error
       if (inscription.status !== 200) {
@@ -130,7 +122,7 @@ export const addWatchListBySlug = async (slug: string, userRef: any) => {
       }
     }
 
-    const inscriptionData = await inscription.json();
+    const inscriptionData = inscription.data;
 
     if (!inscriptionData) {
       return { error: "Collection not found" };
@@ -141,19 +133,14 @@ export const addWatchListBySlug = async (slug: string, userRef: any) => {
     console.log("inscription", inscriptionNumber);
 
     //get collection id
-    const headers = new Headers();
-    headers.append("x-api-key", process.env.SIMPLE_HASH ?? "");
+    const headers = {
+      'x-api-key': process.env.SIMPLE_HASH ?? ""
+    };
 
-    const collectionIdFromSlug = await fetch(
-      `https://api.simplehash.com/api/v0/nfts/bitcoin/inscription_number/${inscriptionNumber}`,
-      {
-        method: "GET",
-        headers: headers,
-      }
-    );
+    const collectionIdFromSlug = await axios.get(`https://api.simplehash.com/api/v0/nfts/bitcoin/inscription_number/${inscriptionNumber}`, { headers });
 
     //verify response
-    const response = await collectionIdFromSlug.json();
+    const response = collectionIdFromSlug.data;
 
     // console.log("response", response);
     if (response.status !== 200) {
@@ -176,15 +163,9 @@ export const addWatchListBySlug = async (slug: string, userRef: any) => {
       //add to collection
 
       //get collection metadata details
-      let collectionResponse: any = await fetch(
-        `https://api.simplehash.com/api/v0/nfts/collections/ids?collection_ids=${collectionId}`,
-        {
-          method: "GET",
-          headers: headers,
-        }
-      );
+      let collectionResponse: any = await axios.get(`https://api.simplehash.com/api/v0/nfts/collections/ids?collection_ids=${collectionId}`, { headers });
 
-      collectionResponse = await collectionResponse.json();
+      collectionResponse = collectionResponse.data;
 
       // console.log("collectionResponse", collectionResponse);
 
@@ -291,19 +272,17 @@ export const addWatchListById = async (collectionId: string, userRef: any) => {
 
     console.log("isThereInCollection", isThereInCollection);
 
-    const headers = new Headers();
-    headers.append("x-api-key", process.env.SIMPLE_HASH ?? "");
+    const headers = {
+      'x-api-key': process.env.SIMPLE_HASH ?? ""
+    };
 
     if (isThereInCollection.error == "Collection not found") {
       //add to collection
 
       //get collection metadata details
-      let collectionResponse: any = await fetch(
+      let collectionResponse: any = await axios.get(
         `https://api.simplehash.com/api/v0/nfts/collections/ids?collection_ids=${collectionId}`,
-        {
-          method: "GET",
-          headers: headers,
-        }
+        { headers }
       );
 
       const [collectionsStats, collectionsFloor] = await Promise.all([
@@ -313,7 +292,7 @@ export const addWatchListById = async (collectionId: string, userRef: any) => {
 
       console.log("collectionsStats", collectionsStats);
       console.log("collectionsFloor", collectionsFloor);
-      console.log(collectionResponse.json());
+      console.log(collectionResponse.data);
 
       if (collectionsStats.length === 0 || collectionsFloor.length === 0) {
         return { error: "No data found" };
@@ -327,7 +306,7 @@ export const addWatchListById = async (collectionId: string, userRef: any) => {
         {}
       );
 
-      collectionResponse = await collectionResponse.json();
+      collectionResponse = collectionResponse.data;
 
       const parsedCollectionResponse = collectionResponse.map((collection: any) => ({
         collection_id: collection.collection_id,

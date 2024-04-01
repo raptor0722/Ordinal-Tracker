@@ -1,3 +1,5 @@
+import axios from 'axios';
+
 interface CollectionDetails {
   collection_id: string;
   name: string;
@@ -20,16 +22,14 @@ async function getCollectionIds(wallets: string | null): Promise<
   let collectionDetails: CollectionDetails[] = [];
 
   const fetchData = async (wallet: string) => {
-    const headers = new Headers();
-    headers.append("x-api-key", apikey);
-
     console.log("fetching data for wallet now using simple hash", wallet);
 
-    const response = await fetch(
+    const response = await axios.get(
       `https://api.simplehash.com/api/v0/nfts/collections_by_wallets_v2?chains=bitcoin&wallet_addresses=${wallet}`,
       {
-        method: "GET",
-        headers: headers,
+        headers: {
+          "x-api-key": apikey
+        },
       }
     );
 
@@ -37,7 +37,7 @@ async function getCollectionIds(wallets: string | null): Promise<
     if (response.status === 200) {
 
       console.log("response is now 200!", response);
-      const jsonData = await response.json();
+      const jsonData = response.data;
 
       console.log("json data is now", jsonData);
       const ids = jsonData.collections

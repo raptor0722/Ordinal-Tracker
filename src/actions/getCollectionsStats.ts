@@ -1,36 +1,29 @@
-"use server";
+import axios from 'axios';
 
 async function getCollectionsStats(collectionIds: string[]) {
   try {
     let apikey: string = process.env.SIMPLE_HASH ?? "";
 
-    const headers = new Headers();
-    headers.append("x-api-key", apikey);
-
     let allCollectionStats: any = [];
-    // console.log("Inside getCollectionsStats");
 
     for (let i = 0; i < collectionIds.length; i += 5) {
       const currentCollectionIds = collectionIds.slice(i, i + 5);
       const currentCollectionIdsParam = currentCollectionIds.join(",");
 
-      // console.log("currentCollectionIdsParam", currentCollectionIdsParam);
-
-      const response = await fetch(
+      const response = await axios.get(
         `https://api.simplehash.com/api/v0/nfts/collections_activity?collection_ids=${currentCollectionIdsParam}`,
         {
-          method: "GET",
-          headers: headers,
+          headers: {
+            "x-api-key": apikey,
+          },
         }
       );
 
-      // console.log("response", response);
-
-      if (!response.ok) {
+      if (response.status !== 200) {
         throw new Error(`Failed to fetch data from API. Status: ${response.status}`);
       }
 
-      const jsonData = await response.json();
+      const jsonData = response.data;
 
       const collectionStats = jsonData.collections.map((collection: any) => ({
         collection_id: collection.collection_id,
@@ -47,13 +40,11 @@ async function getCollectionsStats(collectionIds: string[]) {
     if (allCollectionStats.length === 0) {
       throw new Error("No collection stats found");
     }
-    // console.log("allCollectionStats", allCollectionStats);
 
     return allCollectionStats;
   } catch (error) {
     console.error("Error fetching collection stats:", error);
     throw new Error("Error fetching collection stats");
-    return [];
   }
 }
 
