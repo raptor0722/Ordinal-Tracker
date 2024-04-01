@@ -35,7 +35,7 @@ function SearchWatchlist({
     alert("Please login to add a collection to your watchlist");
     router.push("/auth/signin");
   }
-  console.log("userRef", userRef, user);
+  console.log("userRef @ 338", userRef, user);
 
   const handleaddWatchListBySlug = async (event: React.KeyboardEvent) => {
     if (event.key === "Enter") {

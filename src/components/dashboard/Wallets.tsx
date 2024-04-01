@@ -35,7 +35,7 @@ function Wallets({
   let userRef: any = React.useRef(user);
 
   console.log("user", user);
-  console.log("userRef", userRef);
+  console.log("userRef @ 38", userRef);
 
   const handleDelete = (chipToDelete: ChipData) => async () => {
     if (userRef.current !== undefined) {
