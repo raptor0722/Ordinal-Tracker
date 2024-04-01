@@ -15,12 +15,15 @@ async function getCollectionIds(wallets: string | null): Promise<
   }
   | undefined
 > {
-  let apikey: string = process.env.SIMPLE_HASH ?? "";
+  let apikey: string = "djankoeth_sk_82e199b8-1068-4f03-88f3-ebea289332a2_6l5eq6wn5r0ny4ol";
+
   let collectionDetails: CollectionDetails[] = [];
 
   const fetchData = async (wallet: string) => {
     const headers = new Headers();
     headers.append("x-api-key", apikey);
+
+    console.log("fetching data for wallet now using simple hash", wallet);
 
     const response = await fetch(
       `https://api.simplehash.com/api/v0/nfts/collections_by_wallets_v2?chains=bitcoin&wallet_addresses=${wallet}`,
@@ -30,13 +33,18 @@ async function getCollectionIds(wallets: string | null): Promise<
       }
     );
 
+    console.log("the response has arrived", response);
     if (response.status === 200) {
+
+      console.log("response is now 200!", response);
       const jsonData = await response.json();
 
+      console.log("json data is now", jsonData);
       const ids = jsonData.collections
         .map((collection: any) => collection.collection_id)
         .filter((id: string | null) => id !== null);
 
+      console.log("ids are now", ids);
       collectionDetails = [
         ...collectionDetails,
         ...jsonData.collections.map((collection: any) => ({
@@ -50,7 +58,7 @@ async function getCollectionIds(wallets: string | null): Promise<
           total_quantity: collection.collection_details.total_quantity,
         })),
       ];
-
+      console.log("collection details are now", collectionDetails);
       return { [wallet]: ids };
     } else {
       throw new Error();
