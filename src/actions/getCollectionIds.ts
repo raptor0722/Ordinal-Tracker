@@ -1,6 +1,3 @@
-import dotenv from "dotenv";
-dotenv.config();
-
 interface CollectionDetails {
   collection_id: string;
   name: string;
